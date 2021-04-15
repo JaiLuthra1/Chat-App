@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+
+	<div class="overflow-auto pt-2 pl-2 pr-2 mb-2 mt-4 bg-light" style="max-width: 100; max-height: 600px;" id = "messages"></div>
+
+	<form class="input-group mb-3" id = "messageForm">
+		<input type="text" class="form-control" placeholder="Enter Your Message" aria-label="Message">
+		<div class="input-group-append">
+			<button class="btn btn-outline-secondary" type = "submit">Send</button>
+		</div>
+	</form>
+</div>
+
+{% endblock %}
+
+
+{% block css %}
+<style>
+	
+</style>
+{% endblock %}
+
+{% block js %}
+	<script>
+
+		window.onload = function (){
+			setInterval(getMessages, 10);
+		};
+
+		colors = ["primary", "secondary", "success", "danger", "warning", "info", "light", "dark"];
+		hashCode = s => s.split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
+		color = s => { return colors[hashCode(s) % 8]; };
+
+		function getMessages(){
+			fetch('/getMessages')
+					.then(function (response) {
+						return response.json();
+					}).then(function (response) {
+
+						username = response['username']
+						content = ""
+
+						for (message of response["messages"]){
+							console.log(message);
+
+							name = message.split(':')[0];
+
+							if(name == username){
+								name = "";
+							}
+							else{
+								name += " : "
+							}
+
+							lcontent = `<div><div class="alert alert-${color(name)} p-1" style="
+											max-width : 700px;
+											display: inline-block;
+											border-radius : 10px;
+											margin : 5px;
+										">
+											<b> ${name}</b>
+											${message.split(':')[1]}
+										</div> </div>`;
+
+							if(name == ""){
+								lcontent = `<div class="d-flex justify-content-end">` + lcontent + `</div>`
+							}
+
+							content += lcontent;
+
+						}
+
+						element = document.getElementById("messages")
+						element.innerHTML += content
+						
+						if (content){
+							element.scrollTop = element.scrollHeight;
+						} 
+					});
+		};
+
+		$("#messageForm").submit(function(event) {
+			event.preventDefault();
+
+			message = $("#messageForm").children("input").val();
+			$("#messageForm").children("input").val("");
+			console.log(message);
+
+			$.ajax({
+				type: 'POST',
+				url: "/sendMessage",
+				data: {"message" : message},
+				dataType: "text"
+			});
+		});
+	</script>
+{% endblock %}
