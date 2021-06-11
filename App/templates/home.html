@@ -27,7 +27,7 @@
 	<script>
 
 		window.onload = function (){
-			setInterval(getMessages, 10);
+			setInterval(getMessages, 100);
 		};
 
 		colors = ["primary", "secondary", "success", "danger", "warning", "info", "light", "dark"];
@@ -44,16 +44,10 @@
 						content = ""
 
 						for (message of response["messages"]){
-							console.log(message);
-
+							
 							name = message.split(':')[0];
 
-							if(name == username){
-								name = "";
-							}
-							else{
-								name += " : "
-							}
+							console.log(message, name, color(name));
 
 							lcontent = `<div><div class="alert alert-${color(name)} p-1" style="
 											max-width : 700px;
@@ -61,11 +55,11 @@
 											border-radius : 10px;
 											margin : 5px;
 										">
-											<b> ${name}</b>
+											<b> ${name == username ? "" : name + " : "}</b>
 											${message.split(':')[1]}
 										</div> </div>`;
 
-							if(name == ""){
+							if(name == username){
 								lcontent = `<div class="d-flex justify-content-end">` + lcontent + `</div>`
 							}
 

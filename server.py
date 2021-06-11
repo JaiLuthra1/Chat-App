@@ -37,7 +37,7 @@ class Server:
         name = client.recv(self.BUFSIZ).decode("utf8")
         person.set_name(name)
 
-        msg = bytes(f"{name} has joined the chat!", "utf8")
+        msg = bytes(f"{name}: joined the chat!", "utf8")
         self.broadcast(msg, "")  # broadcast welcome message
 
         while True:  # wait for any messages from person
@@ -47,7 +47,7 @@ class Server:
                             "utf8"):  # if message is quit, disconnect client
                 client.close()
                 self.persons.remove(person)
-                self.broadcast(bytes(f"{name} has left the chat...", "utf8"),
+                self.broadcast(bytes(f"{name}: has left the chat...", "utf8"),
                                "")
                 print(f"[DISCONNECTED] {name} disconnected")
                 break
