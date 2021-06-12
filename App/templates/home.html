@@ -30,9 +30,9 @@
 			setInterval(getMessages, 100);
 		};
 
-		colors = ["primary", "secondary", "success", "danger", "warning", "info", "light", "dark"];
+		colors = ["primary", "secondary", "success", "danger", "warning", "info", "dark"];
 		hashCode = s => s.split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
-		color = s => { return colors[hashCode(s) % 8]; };
+		color = s => { return colors[Math.abs(hashCode(s)) % 7]; };
 
 		function getMessages(){
 			fetch('/getMessages')

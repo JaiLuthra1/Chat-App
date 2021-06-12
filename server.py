@@ -14,7 +14,7 @@ class Server:
     def __init__(self):
         self.SERVER = socket(AF_INET, SOCK_STREAM)
         self.SERVER.bind(self.ADDR)
-        self.persons = []
+        self.persons = [[] for i in range(10000)]
         self.SERVER.listen(self.MAX_CONNECTIONS)
         print("[STARTED] Waiting for connections...")
         server_thread = Thread(target=self.wait_for_connection)
@@ -22,8 +22,8 @@ class Server:
         server_thread.join()
         self.SERVER.close()
 
-    def broadcast(self, msg, name):
-        for person in self.persons:
+    def broadcast(self, msg, name, ID):
+        for person in self.persons[ID]:
             client = person.client
             try:
                 client.send(bytes(name, "utf8") + msg)
@@ -34,11 +34,17 @@ class Server:
         client = person.client
 
         # first message received is always the persons name
-        name = client.recv(self.BUFSIZ).decode("utf8")
+        nameID = client.recv(self.BUFSIZ).decode("utf8")
+        nameID = nameID.split()
+        name = nameID[0]
+        ID = int(nameID[1])
+        print(name, ID)
+        
         person.set_name(name)
+        self.persons[ID].append(person)
 
         msg = bytes(f"{name}: joined the chat!", "utf8")
-        self.broadcast(msg, "")  # broadcast welcome message
+        self.broadcast(msg, "", ID)  # broadcast welcome message
 
         while True:  # wait for any messages from person
             msg = client.recv(self.BUFSIZ)
@@ -46,13 +52,13 @@ class Server:
             if msg == bytes("{quit}",
                             "utf8"):  # if message is quit, disconnect client
                 client.close()
-                self.persons.remove(person)
+                self.persons[ID].remove(person)
                 self.broadcast(bytes(f"{name}: has left the chat...", "utf8"),
-                               "")
+                               "", ID)
                 print(f"[DISCONNECTED] {name} disconnected")
                 break
             else:  # otherwise send message to all other clients
-                self.broadcast(msg, name + ": ")
+                self.broadcast(msg, name + ": ", ID)
                 print(f"{name}: ", msg.decode("utf8"))
 
     def wait_for_connection(self):
@@ -66,7 +72,6 @@ class Server:
                 )  # wait for any new connections
                 person = Person(addr,
                                 client)
-                self.persons.append(person)
 
                 print(
                     f"[CONNECTION] {addr} connected to the server at {time.time()}"

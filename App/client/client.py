@@ -9,7 +9,7 @@ class Client:
     ADDR = (HOST, PORT)
     BUFSIZ = 1024
 
-    def __init__(self, name):
+    def __init__(self, name, ID):
         """
         Init object and send name to server
         """
@@ -19,7 +19,7 @@ class Client:
         self.ACTIVE = True
         receive_thread = Thread(target=self.receive_messages)
         receive_thread.start()
-        self.send_message(name)
+        self.send_message(name + " " + ID)
         self.messg_lock = Lock()
 
     def receive_messages(self):

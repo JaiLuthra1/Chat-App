@@ -1,6 +1,7 @@
 from flask import Flask, render_template, url_for, redirect, request, session, jsonify, flash
 import json
 from client.client import Client
+import random
 
 app = Flask(__name__)
 app.secret_key = 'inder128'
@@ -12,11 +13,15 @@ client = None
 def login():
 	if request.method == "POST":
 		session['username'] = request.form["username"]
+		session['ID'] = request.form["ID"]
+		if session['ID'] == '':
+			session['ID'] = str(random.randint(1000, 9999))
+		print(session['ID'])
 
 		global client
-		client = Client(session['username'])
+		client = Client(session['username'], session['ID'])
 
-		flash(session['username'] + ' Welcome to the Chat Room', 'success')
+		flash(session['username'] + ' Welcome to the Chat Room. \nID of this room is : ' + session['ID'], 'success')
 		return redirect(url_for("home"))
 
 	return render_template('login.html')
@@ -26,6 +31,7 @@ def login():
 @app.route('/logout')
 def logout():
 	session.pop('username', None)
+	session.pop('ID', None)
 	if client: client.disconnect()
 	return redirect(url_for("login"))
 
